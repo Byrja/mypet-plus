@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyPet+ • Забота о питомце</title>
+    
+    <!-- PWA & Telegram Web App -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <meta name="theme-color" content="#7FB5B5">
+    <meta name="telegram-web-app-bg-color" content="#7FB5B5">
+    <meta name="telegram-web-app-theme-color" content="#7FB5B5">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Стили -->
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* ВРЕМЕННЫЕ СТИЛИ ДЛЯ ОКНА ЗДОРОВЬЯ */
+        .health-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .health-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem 1rem;
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .health-action-btn:hover {
+            background: #e8f4f4;
+            border-color: #7FB5B5;
+            color: #7FB5B5;
+        }
+        
+        .health-action-btn .icon {
+            font-size: 2rem;
+            color: currentColor;
+        }
+        
+        .coming-soon-notice {
+            background: #e8f4f4;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 2px dashed #7FB5B5;
+        }
+        
+        .coming-soon-notice .icon {
+            font-size: 2rem;
+            color: #7FB5B5;
+            margin-bottom: 1rem;
+        }
+        
+        .coming-soon-notice p {
+            color: #1E293B;
+            font-weight: 500;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Экран загрузки -->
+    <div id="loading-screen" class="screen active">
+        <div class="loading-wrapper">
+            <div class="loading-content">
+                <div class="loading-video-container">
+                    <video autoplay muted playsinline class="loading-video" id="loading-video">
+                        <source src="video/loading-video.mp4" type="video/mp4">
+                        <div class="video-fallback">
+                            <div class="paw-animation">
+                                <i class="fas fa-paw icon"></i>
+                            </div>
+                        </div>
+                    </video>
+                </div>
+                
+                <h1 class="app-title">MyPet<span class="plus">+</span></h1>
+                <p class="app-tagline">Забота начинается здесь</p>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <p class="loading-text">Загрузка приложения…</p>
+                </div>
+            </div>
+            
+            <div class="loading-footer">
+                <p><i class="fas fa-heart icon"></i> С любовью к вашим питомцам</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран выбора аккаунта/логина -->
+    <div id="login-screen" class="screen">
+        <div class="login-header">
+            <button class="back-btn" id="back-to-loading-from-login">
+                <i class="fas fa-chevron-left icon"></i>
+            </button>
+            <div class="header-content">
+                <h2>Вход в MyPet+</h2>
+                <p>Выберите аккаунт или создайте новый</p>
+            </div>
+        </div>
+
+        <div class="login-container">
+            <div class="login-options">
+                <div class="existing-users" id="existing-users">
+                    <h3 class="section-title">Ваши аккаунты</h3>
+                    <div class="users-list" id="users-list">
+                        <!-- Аккаунты загружаются динамически -->
+                    </div>
+                </div>
+
+                <div class="login-form-section">
+                    <h3 class="section-title">Быстрый вход</h3>
+                    
+                    <form id="quick-login-form" class="login-form">
+                        <div class="input-group">
+                            <label for="login-email-phone">
+                                <i class="fas fa-envelope icon"></i>
+                                Email или телефон
+                            </label>
+                            <input type="text" id="login-email-phone" placeholder="example@mail.ru или +79991234567">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="login-password">
+                                <i class="fas fa-lock icon"></i>
+                                Пароль
+                            </label>
+                            <div class="password-wrapper">
+                                <input type="password" id="login-password" placeholder="Введите пароль">
+                                <button type="button" class="password-toggle" id="toggle-login-password">
+                                    <i class="fas fa-eye icon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <i class="fas fa-sign-in-alt icon"></i>
+                            <span class="btn-text">Войти</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="divider">
+                    <span>или</span>
+                </div>
+
+                <div class="create-account-section">
+                    <h3 class="section-title">Новый пользователь?</h3>
+                    <button class="btn btn-secondary btn-large" id="goto-register">
+                        <i class="fas fa-plus icon"></i>
+                        <span class="btn-text">Создать аккаунт</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран регистрации -->
+    <div id="register-screen" class="screen">
+        <div class="register-header">
+            <button class="back-btn" id="back-to-login">
+                <i class="fas fa-chevron-left icon"></i>
+            </button>
+            <div class="header-content">
+                <h2>Создайте аккаунт</h2>
+                <p>Присоединяйтесь к сообществу заботливых хозяев</p>
+            </div>
+        </div>
+
+        <div class="register-container">
+            <form id="register-form" class="register-form">
+                <div class="form-section">
+                    <h3 class="section-title">Основная информация</h3>
+                    
+                    <div class="input-group">
+                        <label for="email-phone">
+                            <i class="fas fa-envelope icon"></i>
+                            Email или телефон *
+                        </label>
+                        <input type="text" id="email-phone" placeholder="example@mail.ru или +79991234567" required>
+                        <div class="error-message" id="email-phone-error"></div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">
+                            <i class="fas fa-lock icon"></i>
+                            Создать пароль *
+                        </label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" placeholder="Минимум 8 символов" required>
+                            <button type="button" class="password-toggle" id="toggle-password">
+                                <i class="fas fa-eye icon"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength">
+                            <div class="strength-meter">
+                                <div class="strength-level" id="strength-level"></div>
+                            </div>
+                            <div class="strength-labels">
+                                <span class="strength-text" id="strength-text">Сложность пароля</span>
+                                <span class="strength-score" id="strength-score">0/4</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Личные данные</h3>
+                    
+                    <div class="input-group">
+                        <label for="lastname">
+                            <i class="fas fa-user icon"></i>
+                            Фамилия *
+                        </label>
+                        <input type="text" id="lastname" placeholder="Иванов" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="firstname">
+                            <i class="fas fa-user icon"></i>
+                            Имя *
+                        </label>
+                        <input type="text" id="firstname" placeholder="Иван" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="middlename">
+                            <i class="fas fa-user icon"></i>
+                            Отчество
+                        </label>
+                        <input type="text" id="middlename" placeholder="Иванович">
+                    </div>
+
+                    <div class="input-group">
+                        <label>
+                            <i class="fas fa-mars icon"></i>
+                            Пол *
+                        </label>
+                        <div class="gender-selector">
+                            <label class="gender-option">
+                                <input type="radio" name="gender" value="male" required>
+                                <div class="gender-content">
+                                    <i class="fas fa-mars icon"></i>
+                                    <span>Мужской</span>
+                                </div>
+                            </label>
+                            <label class="gender-option">
+                                <input type="radio" name="gender" value="female" required>
+                                <div class="gender-content">
+                                    <i class="fas fa-venus icon"></i>
+                                    <span>Женский</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="birthdate">
+                            <i class="fas fa-birthday-cake icon"></i>
+                            Дата рождения *
+                        </label>
+                        <input type="date" id="birthdate" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="city">
+                            <i class="fas fa-city icon"></i>
+                            Город *
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="city" required>
+                                <option value="" disabled selected>Выберите город</option>
+                                <option value="moscow">Москва</option>
+                                <option value="spb">Санкт-Петербург</option>
+                                <option value="novosibirsk">Новосибирск</option>
+                                <option value="ekaterinburg">Екатеринбург</option>
+                                <option value="kazan">Казань</option>
+                                <option value="nizhny_novgorod">Нижний Новгород</option>
+                                <option value="chelyabinsk">Челябинск</option>
+                                <option value="omsk">Омск</option>
+                                <option value="samara">Самара</option>
+                                <option value="rostov">Ростов-на-Дону</option>
+                                <option value="ufa">Уфа</option>
+                                <option value="krasnoyarsk">Красноярск</option>
+                                <!-- Красноярский край -->
+                                <option value="achinsk">Ачинск</option>
+                                <option value="kansk">Канск</option>
+                                <option value="zelenogorsk">Зеленогорск</option>
+                                <option value="lesosibirsk">Лесосибирск</option>
+                                <option value="minusinsk">Минусинск</option>
+                                <option value="norilsk">Норильск</option>
+                                <option value="sayanogorsk">Саяногорск</option>
+                                <option value="divnogorsk">Дивногорск</option>
+                                <option value="sosnovoborsk">Сосновоборск</option>
+                                <option value="sharypovo">Шарыпово</option>
+                                <option value="other_krasnoyarsk">Другой город Красноярского края</option>
+                                <!-- Другие крупные города -->
+                                <option value="vladivostok">Владивосток</option>
+                                <option value="khabarovsk">Хабаровск</option>
+                                <option value="irkutsk">Иркутск</option>
+                                <option value="yaroslavl">Ярославль</option>
+                                <option value="tula">Тула</option>
+                                <option value="barnaul">Барнаул</option>
+                                <option value="volgograd">Волгоград</option>
+                                <option value="voronezh">Воронеж</option>
+                                <option value="perm">Пермь</option>
+                                <option value="krasnodar">Краснодар</option>
+                                <option value="saratov">Саратов</option>
+                                <option value="tyumen">Тюмень</option>
+                                <option value="tolyatti">Тольятти</option>
+                                <option value="other">Другой город</option>
+                            </select>
+                            <i class="fas fa-chevron-down icon arrow-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terms-agreement">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">
+                        Я согласен с условиями использования
+                    </label>
+                </div>
+
+                <button type="submit" id="register-btn" class="btn btn-primary btn-large">
+                    <span class="btn-text">Зарегистрироваться</span>
+                    <i class="fas fa-check icon"></i>
+                </button>
+
+                <p class="login-link">
+                    Уже есть аккаунт? <a href="#" id="goto-login">Войти</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Главный экран -->
+    <div id="main-screen" class="screen">
+        <!-- Верхняя панель -->
+        <div class="app-header">
+            <div class="header-left">
+                <button class="menu-btn" id="menu-btn">
+                    <i class="fas fa-bars icon"></i>
+                </button>
+                <div class="header-title">
+                    <h2 id="screen-title">Календарь</h2>
+                    <p id="screen-subtitle" class="subtitle">Сегодня</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="header-action" id="notifications-btn">
+                    <i class="fas fa-bell icon"></i>
+                    <span class="notification-badge">0</span>
+                </button>
+                <button class="header-action" id="profile-btn">
+                    <div class="user-avatar" id="user-avatar">
+                        <i class="fas fa-user icon"></i>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Боковое меню -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="user-info">
+                    <div class="sidebar-avatar" id="sidebar-user-avatar">
+                        <i class="fas fa-user icon"></i>
+                    </div>
+                    <div class="user-details">
+                        <h3 class="user-name" id="sidebar-user-name">Гость</h3>
+                        <p class="user-email" id="sidebar-user-email">Войдите в аккаунт</p>
+                    </div>
+                </div>
+                <button class="close-sidebar" id="close-sidebar">
+                    <i class="fas fa-times icon"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-screen="calendar">
+                    <i class="fas fa-calendar-alt icon"></i>
+                    <span>Календарь</span>
+                </a>
+                <a href="#" class="nav-item" data-screen="pets">
+                    <i class="fas fa-paw icon"></i>
+                    <span>Питомцы</span>
+                </a>
+                <a href="#" class="nav-item" data-screen="learning">
+                    <i class="fas fa-graduation-cap icon"></i>
+                    <span>Обучение</span>
+                </a>
+                <!-- НОВЫЕ РАЗДЕЛЫ -->
+                <a href="#" class="nav-item" data-screen="chat">
+                    <i class="fas fa-comments icon"></i>
+                    <span>Чат-помощник</span>
+                </a>
+                <a href="#" class="nav-item" data-screen="social">
+                    <i class="fas fa-users icon"></i>
+                    <span>Соцсеть</span>
+                </a>
+                <a href="#" class="nav-item" data-screen="marketplace">
+                    <i class="fas fa-store icon"></i>
+                    <span>Маркетплейс</span>
+                </a>
+                <a href="#" class="nav-item" data-screen="profile">
+                    <i class="fas fa-user icon"></i>
+                    <span>Профиль</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="btn btn-secondary btn-small" id="logout-btn">
+                    <i class="fas fa-sign-out-alt icon"></i>
+                    Сменить аккаунт
+                </button>
+                <p class="app-version">MyPet+ v2.1 • 2025</p>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="main-content" id="content-area">
+            <!-- Контент загружается динамически -->
+        </div>
+
+        <!-- Нижняя навигация -->
+        <div class="bottom-nav">
+            <button class="nav-btn active" data-screen="calendar">
+                <i class="fas fa-calendar-alt icon"></i>
+                <span>Календарь</span>
+            </button>
+            <button class="nav-btn" data-screen="pets">
+                <i class="fas fa-paw icon"></i>
+                <span>Питомцы</span>
+            </button>
+            <button class="nav-btn" data-screen="learning">
+                <i class="fas fa-graduation-cap icon"></i>
+                <span>Обучение</span>
+            </button>
+            <!-- НОВЫЕ КНОПКИ В НИЖНЕЙ НАВИГАЦИИ -->
+            <button class="nav-btn" data-screen="chat">
+                <i class="fas fa-comments icon"></i>
+                <span>Чат</span>
+            </button>
+            <button class="nav-btn" data-screen="social">
+                <i class="fas fa-users icon"></i>
+                    <span>Соцсеть</span>
+                </button>
+                <button class="nav-btn" data-screen="marketplace">
+                    <i class="fas fa-store icon"></i>
+                    <span>Маркет</span>
+                </button>
+                <button class="nav-btn" data-screen="profile">
+                    <i class="fas fa-user icon"></i>
+                    <span>Профиль</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Модальное окно добавления питомца -->
+        <div id="add-pet-modal" class="modal">
+            <div class="modal-overlay" id="modal-overlay"></div>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-paw icon modal-icon"></i>
+                        <h3>Добавьте вашего друга</h3>
+                    </div>
+                    <button class="close-modal" id="close-pet-modal">
+                        <i class="fas fa-times-circle icon"></i>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <form id="add-pet-form">
+                        <div class="pet-form-grid">
+                            <div class="input-group">
+                                <label for="pet-type">
+                                    <i class="fas fa-dog icon"></i>
+                                    Вид питомца *
+                                </label>
+                                <div class="select-wrapper">
+                                    <select id="pet-type" required>
+                                        <option value="" disabled selected>Выберите вид</option>
+                                        <option value="dog">Собака</option>
+                                        <option value="cat">Кошка</option>
+                                        <option value="rabbit">Кролик</option>
+                                        <option value="bird">Птица</option>
+                                        <option value="other">Другое</option>
+                                    </select>
+                                    <i class="fas fa-chevron-down icon arrow-down"></i>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="pet-name">
+                                    <i class="fas fa-user icon"></i>
+                                    Имя друга *
+                                </label>
+                                <input type="text" id="pet-name" placeholder="Как зовут вашего друга?" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label>
+                                    <i class="fas fa-mars icon"></i>
+                                    Пол *
+                                </label>
+                                <div class="gender-selector pet-gender">
+                                    <label class="gender-option">
+                                        <input type="radio" name="pet-gender" value="male" required>
+                                        <div class="gender-content">
+                                            <i class="fas fa-mars icon"></i>
+                                            <span>Мальчик</span>
+                                        </div>
+                                    </label>
+                                    <label class="gender-option">
+                                        <input type="radio" name="pet-gender" value="female" required>
+                                        <div class="gender-content">
+                                            <i class="fas fa-venus icon"></i>
+                                            <span>Девочка</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="pet-weight">
+                                    <i class="fas fa-weight-hanging icon"></i>
+                                    Вес (кг) *
+                                </label>
+                                <input type="number" id="pet-weight" placeholder="Например: 4.5" step="0.1" min="0.1" max="100" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="pet-birthdate">
+                                    <i class="fas fa-birthday-cake icon"></i>
+                                    Дата рождения
+                                </label>
+                                <input type="date" id="pet-birthdate">
+                            </div>
+
+                            <div class="input-group full-width">
+                                <label for="pet-breed">
+                                    <i class="fas fa-info-circle icon"></i>
+                                    Порода
+                                </label>
+                                <input type="text" id="pet-breed" placeholder="Например: сиамская, лабрадор">
+                            </div>
+
+                            <div class="input-group full-width">
+                                <label for="pet-photo">
+                                    <i class="fas fa-upload icon"></i>
+                                    Фото питомца
+                                </label>
+                                <div class="photo-upload">
+                                    <input type="file" id="pet-photo" accept="image/*" class="photo-input">
+                                    <label for="pet-photo" class="photo-upload-btn">
+                                        <i class="fas fa-upload icon"></i>
+                                        <span>Выбрать фото</span>
+                                    </label>
+                                    <div class="photo-preview" id="pet-photo-preview"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancel-pet-form">Отмена</button>
+                            <button type="submit" class="btn btn-primary" id="save-pet-btn">
+                                <i class="fas fa-plus icon"></i>
+                                Добавить питомца
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно добавления события в календарь -->
+        <div id="add-event-modal" class="modal">
+            <div class="modal-overlay" id="event-modal-overlay"></div>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-calendar-alt icon modal-icon" id="event-type-icon"></i>
+                        <h3 id="event-modal-title">Добавить событие</h3>
+                    </div>
+                    <button class="close-modal" id="close-event-modal">
+                        <i class="fas fa-times-circle icon"></i>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <form id="add-event-form">
+                        <div class="input-group">
+                            <label for="event-pet">
+                                <i class="fas fa-paw icon"></i>
+                                Для питомца *
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="event-pet" required>
+                                    <option value="" disabled selected>Выберите питомца</option>
+                                </select>
+                                <i class="fas fa-chevron-down icon arrow-down"></i>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="event-type">
+                                <i class="fas fa-info-circle icon"></i>
+                                Тип события *
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="event-type" required>
+                                    <option value="" disabled selected>Выберите тип</option>
+                                    <option value="feeding">Кормление</option>
+                                    <option value="water">Вода</option>
+                                    <option value="medication">Лекарства</option>
+                                    <option value="vet">Ветеринар</option>
+                                    <option value="walk">Выгул</option>
+                                    <option value="grooming">Уход</option>
+                                    <option value="training">Дрессировка</option>
+                                    <option value="other">Другое</option>
+                                </select>
+                                <i class="fas fa-chevron-down icon arrow-down"></i>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="event-title">
+                                <i class="fas fa-edit icon"></i>
+                                Название *
+                            </label>
+                            <input type="text" id="event-title" placeholder="Например: Завтрак" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="event-date">
+                                    <i class="fas fa-calendar-alt icon"></i>
+                                    Дата *
+                                </label>
+                                <input type="date" id="event-date" required>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="event-time">
+                                    <i class="fas fa-clock icon"></i>
+                                    Время *
+                                </label>
+                                <input type="time" id="event-time" required>
+                            </div>
+                        </div>
+
+                        <!-- ДОБАВЛЕНО: Поле для количества корма -->
+                        <div class="input-group" id="food-amount-section" style="display: none;">
+                            <label for="event-food-amount">
+                                <i class="fas fa-weight-hanging icon"></i>
+                                Количество корма (г)
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="number" id="event-food-amount" placeholder="Автоматически" style="flex: 1;">
+                                <button type="button" class="btn btn-small" onclick="calculateFoodForEvent()">
+                                    <i class="fas fa-calculator icon"></i>
+                                    Рассчитать
+                                </button>
+                            </div>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                <span id="food-calculation-info"></span>
+                            </p>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="event-repeat">
+                                <i class="fas fa-redo icon"></i>
+                                Повторение
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="event-repeat">
+                                    <option value="none">Без повтора</option>
+                                    <option value="daily">Ежедневно</option>
+                                    <option value="weekly">Еженедельно</option>
+                                    <option value="monthly">Ежемесячно</option>
+                                    <option value="weekdays">По будням</option>
+                                    <option value="weekends">По выходным</option>
+                                </select>
+                                <i class="fas fa-chevron-down icon arrow-down"></i>
+                            </div>
+                            <div class="repeat-end" id="repeat-end-section" style="display: none; margin-top: 0.5rem;">
+                                <label style="font-size: 0.875rem; color: var(--text-secondary);">
+                                    До: <input type="date" id="repeat-end-date" style="margin-left: 0.5rem;">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="event-reminders">
+                                <i class="fas fa-bell icon"></i>
+                                Напоминания
+                            </label>
+                            <div class="checkboxes-group">
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="reminder" value="15">
+                                    <span>За 15 минут</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="reminder" value="60">
+                                    <span>За 1 час</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="reminder" value="1440">
+                                    <span>За 1 день</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="event-notes">
+                                <i class="fas fa-edit icon"></i>
+                                Заметки
+                            </label>
+                            <textarea id="event-notes" rows="3" placeholder="Дополнительная информация..."></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancel-event-form">Отмена</button>
+                            <button type="submit" class="btn btn-primary" id="save-event-btn">
+                                <i class="fas fa-plus icon"></i>
+                                Добавить событие
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно калькулятора корма -->
+        <div id="food-calculator-modal" class="modal">
+            <div class="modal-overlay" id="food-calculator-overlay"></div>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-calculator icon modal-icon"></i>
+                        <h3>Расчет корма</h3>
+                    </div>
+                    <button class="close-modal" id="close-food-calculator">
+                        <i class="fas fa-times-circle icon"></i>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="calculator-content" id="calculator-content">
+                        <!-- Контент загружается динамически -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно выбора корма -->
+        <div id="food-selector-modal" class="modal">
+            <div class="modal-overlay" id="food-selector-overlay"></div>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-utensils icon modal-icon"></i>
+                        <h3>Выбор корма</h3>
+                    </div>
+                    <button class="close-modal" id="close-food-selector">
+                        <i class="fas fa-times-circle icon"></i>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="food-selector-content" id="food-selector-content">
+                        <!-- Контент загружается динамически -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно редактирования профиля -->
+        <div id="edit-profile-modal" class="modal">
+            <div class="modal-overlay" id="edit-profile-overlay"></div>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-user icon modal-icon"></i>
+                        <h3>Редактировать профиль</h3>
+                    </div>
+                    <button class="close-modal" id="close-edit-profile-modal">
+                        <i class="fas fa-times-circle icon"></i>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <form id="edit-profile-form">
+                        <div class="input-group">
+                            <label for="edit-profile-photo">
+                                <i class="fas fa-upload icon"></i>
+                                Фото профиля
+                            </label>
+                            <div class="photo-upload">
+                                <input type="file" id="edit-profile-photo" accept="image/*" class="photo-input">
+                                <label for="edit-profile-photo" class="photo-upload-btn">
+                                    <i class="fas fa-upload icon"></i>
+                                    <span>Выбрать фото</span>
+                                </label>
+                                <div class="photo-preview" id="edit-profile-photo-preview"></div>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="edit-lastname">
+                                <i class="fas fa-user icon"></i>
+                                Фамилия *
+                            </label>
+                            <input type="text" id="edit-lastname" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="edit-firstname">
+                                <i class="fas fa-user icon"></i>
+                                Имя *
+                            </label>
+                            <input type="text" id="edit-firstname" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="edit-email">
+                                <i class="fas fa-envelope icon"></i>
+                                Email *
+                            </label>
+                            <input type="email" id="edit-email" required>
+                            <div style="margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-small btn-secondary" id="verify-email">
+                                    Подтвердить email
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="edit-phone">
+                                <i class="fas fa-phone icon"></i>
+                                Телефон
+                            </label>
+                            <input type="tel" id="edit-phone" placeholder="+7 (999) 123-45-67">
+                            <div style="margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-small btn-secondary" id="verify-phone">
+                                    Подтвердить телефон
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="edit-password">
+                                <i class="fas fa-lock icon"></i>
+                                Сменить пароль
+                            </label>
+                            <input type="password" id="edit-password" placeholder="Новый пароль (оставьте пустым, если не менять)">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancel-edit-profile">Отмена</button>
+                            <button type="submit" class="btn btn-primary">
+                                Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Панель уведомлений -->
+        <div class="notifications-fab" id="notifications-fab">
+            <button class="fab-btn" id="show-notifications">
+                <i class="fas fa-bell icon"></i>
+                <span class="notification-count" id="notification-count">0</span>
+            </button>
+        </div>
+
+        <!-- Список уведомлений -->
+        <div id="notifications-panel" class="notifications-panel">
+            <div class="notifications-header">
+                <h3>Уведомления</h3>
+                <button class="close-notifications-panel" id="close-notifications-panel">
+                    <i class="fas fa-times icon"></i>
+                </button>
+            </div>
+            
+            <div class="notifications-actions">
+                <button class="btn-icon" id="mark-all-read">
+                    <i class="fas fa-check icon"></i>
+                    <span>Прочитать все</span>
+                </button>
+                <button class="btn-icon" id="clear-notifications">
+                    <i class="fas fa-trash icon"></i>
+                    <span>Очистить</span>
+                </button>
+            </div>
+            
+            <div class="notifications-list" id="notifications-list">
+                <div class="empty-notifications">
+                    <i class="fas fa-bell icon"></i>
+                    <p>Нет новых уведомлений</p>
+                </div>
+            </div>
+            
+            <div class="notifications-footer">
+                <button class="btn btn-secondary" id="open-notifications-settings">
+                    <i class="fas fa-cog icon"></i>
+                    Настройки уведомлений
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран резервного копирования -->
+        <div id="backup-screen" class="screen">
+            <div class="backup-container">
+                <div class="backup-header">
+                    <button class="back-btn" id="back-from-backup">
+                        <i class="fas fa-chevron-left icon"></i>
+                    </button>
+                    <h2>Резервное копирование</h2>
+                </div>
+
+                <div class="backup-content">
+                    <div class="backup-card">
+                        <div class="backup-section">
+                            <h3><i class="fas fa-upload icon"></i> Экспорт данных</h3>
+                            <p>Скачайте все ваши данные в один файл JSON</p>
+                            <button class="btn btn-primary mt-4" id="export-data">
+                                <i class="fas fa-upload icon"></i>
+                                Экспортировать данные
+                            </button>
+                        </div>
+
+                        <div class="backup-section mt-6">
+                            <h3><i class="fas fa-download icon"></i> Импорт данных</h3>
+                            <p>Загрузите ранее сохраненный файл резервной копии</p>
+                            <div class="file-upload mt-4">
+                                <input type="file" id="import-file" accept=".json" style="display: none;">
+                                <label for="import-file" class="btn btn-secondary">
+                                    <i class="fas fa-upload icon"></i>
+                                    Выбрать файл
+                                </label>
+                                <button class="btn btn-primary" id="import-data" disabled>
+                                    Импортировать
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="backup-section mt-6">
+                            <h3><i class="fas fa-trash icon"></i> Очистка данных</h3>
+                            <p>Удалить все данные текущего пользователя</p>
+                            <button class="btn btn-secondary mt-4" id="clear-user-data">
+                                <i class="fas fa-trash icon"></i>
+                                Очистить мои данные
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- НОВЫЙ ЭКРАН: Чат-помощник -->
+        <div id="chat-screen" class="screen">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <button class="back-btn" id="back-from-chat">
+                        <i class="fas fa-chevron-left icon"></i>
+                    </button>
+                    <h2>Чат-помощник</h2>
+                </div>
+
+                <div class="chat-content">
+                    <div class="coming-soon-notice">
+                        <i class="fas fa-comments icon"></i>
+                        <p>Скоро тут появится чат‑помощник</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- НОВЫЙ ЭКРАН: Соцсеть -->
+        <div id="social-screen" class="screen">
+            <div class="social-container">
+                <div class="social-header">
+                    <button class="back-btn" id="back-from-social">
+                        <i class="fas fa-chevron-left icon"></i>
+                    </button>
+                    <h2>Соцсеть</h2>
+                </div>
+
+                <div class="social-content">
+                    <div class="coming-soon-notice">
+                        <i class="fas fa-users icon"></i>
+                        <p>Скоро тут появится соцсеть</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- НОВЫЙ ЭКРАН: Маркетплейс -->
+        <div id="marketplace-screen" class="screen">
+            <div class="marketplace-container">
+                <div class="marketplace-header">
+                    <button class="back-btn" id="back-from-marketplace">
+                        <i class="fas fa-chevron-left icon"></i>
+                    </button>
+                    <h2>Маркетплейс</h2>
+                </div>
+
+                <div class="marketplace-content">
+                    <div class="coming-soon-notice">
+                        <i class="fas fa-store icon"></i>
+                        <p>Скоро тут появится маркетплейс зоотоваров</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран обучения -->
+        <div id="learning-screen" class="screen">
+            <div class="learning-container">
+                <div class="learning-header">
+                    <button class="back-btn" id="back-from-learning">
+                        <i class="fas fa-chevron-left icon"></i>
+                    </button>
+                    <h2>Обучение</h2>
+                </div>
+
+                <div class="learning-content">
+                    <div class="learning-categories">
+                        <div class="category-card" data-category="training">
+                            <div class="category-icon">
+                                <i class="fas fa-dumbbell icon"></i>
+                            </div>
+                            <h3>Дрессировка</h3>
+                            <p>Базовые команды и обучение</p>
+                        </div>
+                        
+                        <div class="category-card" data-category="grooming">
+                            <div class="category-icon">
+                                <i class="fas fa-bath icon"></i>
+                            </div>
+                            <h3>Уход</h3>
+                            <p>Гигиена и груминг</p>
+                        </div>
+                        
+                        <div class="category-card" data-category="health">
+                            <div class="category-icon">
+                                <i class="fas fa-heart icon"></i>
+                            </div>
+                            <h3>Здоровье</h3>
+                            <p>Профилактика и лечение</p>
+                        </div>
+                        
+                        <div class="category-card" data-category="nutrition">
+                            <div class="category-icon">
+                                <i class="fas fa-bowl-food icon"></i>
+                            </div>
+                            <h3>Питание</h3>
+                            <p>Рацион и кормление</p>
+                        </div>
+                        
+                        <div class="category-card" data-category="behavior">
+                            <div class="category-icon">
+                                <i class="fas fa-paw icon"></i>
+                            </div>
+                            <h3>Поведение</h3>
+                            <p>Понимание питомца</p>
+                        </div>
+                        
+                        <div class="category-card" data-category="safety">
+                            <div class="category-icon">
+                                <i class="fas fa-shield-alt icon"></i>
+                            </div>
+                            <h3>Безопасность</h3>
+                            <p>Опасности и защита</p>
+                        </div>
+                    </div>
+
+                    <div class="learning-videos" id="learning-videos">
+                        <h3 class="section-title">Популярные видео</h3>
+                        
+                        <!-- ДОБАВЛЕНО: Уведомление о скором появлении видео -->
+                        <div class="coming-soon-notice">
+                            <i class="fas fa-video icon"></i>
+                            <p>Видеозаписи с обучающими материалами скоро станут доступны</p>
+                        </div>
+                        
+                        <div class="videos-grid">
+                            <!-- Видео загружаются динамически -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- НОВЫЙ ЭКРАН: Профиль -->
+        <div id="profile-screen" class="screen">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <button class="back-btn" id="back-from-profile">
+                        <i class="fas fa-chevron-left icon"></i>
+                    </button>
+                    <h2>Профиль</h2>
+                </div>
+
+                <div class="profile-content">
+                    <div class="user-card">
+                        <div class="user-avatar-large" id="profile-user-avatar">
+                            <!-- Аватар загружается динамически -->
+                            <i class="fas fa-user icon"></i>
+                        </div>
+                        <h2 class="user-name" id="profile-user-name">Гость</h2>
+                        <p class="user-detail" id="profile-user-email">Войдите в аккаунт</p>
+                        
+                        <!-- КНОПКА НАСТРОЕК ДОБАВЛЕНА ЗДЕСЬ -->
+                        <button class="btn btn-primary mt-4" id="open-settings-btn">
+                            <i class="fas fa-cog icon"></i>
+                            Настройки
+                        </button>
+                        
+                        <button class="btn btn-secondary mt-4" id="backup-btn">
+                            <i class="fas fa-database icon"></i>
+                            Резервное копирование
+                        </button>
+                    </div>
+                    
+                    <div class="stats-section">
+                        <h3 class="section-title">Статистика</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-paw icon"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>Питомцы</h4>
+                                    <p class="stat-value" id="profile-pets-count">0</p>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-calendar-alt icon"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>События</h4>
+                                    <p class="stat-value" id="profile-events-count">0</p>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-medkit icon"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>Вакцинации</h4>
+                                    <p class="stat-value" id="profile-vaccinations-count">0</p>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-graduation-cap icon"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>Видео просмотрено</h4>
+                                    <p class="stat-value">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pets-section">
+                        <div class="section-header">
+                            <h3>Мои питомцы</h3>
+                            <button class="add-pet-btn" onclick="openAddPetModal()">
+                                <i class="fas fa-plus icon"></i>
+                                Добавить питомца
+                            </button>
+                        </div>
+                        
+                        <div id="profile-pets-list">
+                            <!-- Питомцы загружаются динамически -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- НОВЫЙ ЭКРАН: Настройки -->
+        <div id="settings-screen" class="screen">
+            <div class="settings-container">
+                <div class="settings-header">
+                    <button class="back-btn" id="back-from-settings">
+                        <i class="fas fa-chevron-left icon"></i>
+                    </button>
+                    <h2>Настройки</h2>
+                </div>
+
+                <div class="settings-content">
+                    <div class="settings-card">
+                        <!-- Настройка темы -->
+                        <div class="settings-item">
+                            <div class="settings-info">
+                                <div class="settings-icon">
+                                    <i class="fas fa-palette icon"></i>
+                                </div>
+
+                                <div>
+                                    <h3>Тема приложения</h3>
+                                    <p>Светлая или тёмная тема</p>
+                                </div>
+                            </div>
+                            <label class="theme-switch">
+                                <input type="checkbox" id="theme-toggle">
+                                <span class="theme-slider">
+                                    <span class="theme-icon sun">
+                                        <i class="fas fa-sun icon"></i>
+                                    </span>
+                                    <span class="theme-icon moon">
+                                        <i class="fas fa-moon icon"></i>
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Резервное копирование -->
+                        <div class="settings-item clickable" id="backup-settings-btn">
+                            <div class="settings-info">
+                                <div class="settings-icon">
+                                    <i class="fas fa-database icon"></i>
+                                </div>
+                                <div>
+                                    <h3>Резервное копирование</h3>
+                                    <p>Экспорт и импорт данных</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right icon"></i>
+                        </div>
+
+                        <!-- Удаление аккаунта -->
+                        <div class="settings-item clickable" id="delete-account-btn">
+                            <div class="settings-info">
+                                <div class="settings-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--error);">
+                                    <i class="fas fa-trash-alt icon"></i>
+                                </div>
+                                <div>
+                                    <h3 style="color: var(--error);">Удалить аккаунт</h3>
+                                    <p>Удалить все данные и профиль</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right icon"></i>
+                        </div>
+
+                        <!-- О приложении -->
+                        <div class="settings-item clickable" id="about-app">
+                            <div class="settings-info">
+                                <div class="settings-icon">
+                                    <i class="fas fa-info-circle icon"></i>
+                                </div>
+                                <div>
+                                    <h3>О приложении</h3>
+                                    <p>Версия и информация о MyPet+</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Информация о приложении (скрыта по умолчанию) -->
+                    <div class="settings-card" id="about-app-info" style="display: none;">
+                        <div class="about-app-content">
+                            <div class="app-logo-large">
+                                <i class="fas fa-paw icon"></i>
+                            </div>
+                            <h3>MyPet+ — это не просто приложение</h3>
+                            <p class="app-description">
+                                Это ваш личный помощник в заботе о пушистых, пернатых и хвостатых друзьях 🐾
+                                <br><br>
+                                Здесь вы найдёте всё необходимое:
+                                <br>✓ Календарь событий и умные напоминания
+                                <br>✓ Контроль здоровья, питания и самочувствия  
+                                <br>✓ Полезные знания по уходу и воспитанию
+                                <br>✓ Инструменты для счастливой жизни вместе
+                            </p>
+                            <div class="app-links">
+                                <p>Разработано с ❤️ для питомцев и их хозяев</p>
+                                <p>© 2025 MyPet+ • Версия 2.1</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно подтверждения удаления аккаунта -->
+        <div id="delete-account-modal" class="modal">
+            <div class="modal-overlay" id="delete-account-overlay"></div>
+            <div class="modal-container">
+                <div class="modal-header" style="background: var(--error);">
+                    <div class="modal-title">
+                        <i class="fas fa-exclamation-triangle icon modal-icon"></i>
+                        <h3>Удаление аккаунта</h3>
+                    </div>
+                    <button class="close-modal" id="close-delete-account-modal">
+                        <i class="fas fa-times-circle icon"></i>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="warning-message" style="text-align: center; padding: 1rem;">
+                        <i class="fas fa-exclamation-circle icon" style="font-size: 3rem; color: var(--error); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--error); margin-bottom: 1rem;">Внимание! Это действие необратимо</h3>
+                        <p style="margin-bottom: 1rem;">При удалении аккаунта будут безвозвратно удалены:</p>
+                        <ul style="text-align: left; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                            <li>Ваш профиль и личные данные</li>
+                            <li>Все добавленные питомцы</li>
+                            <li>Календарь событий и напоминаний</li>
+                            <li>История здоровья и вакцинаций</li>
+                            <li>Все настройки и предпочтения</li>
+                        </ul>
+                        <p style="font-weight: 600; color: var(--error);">Эти данные невозможно восстановить!</p>
+                    </div>
+
+                    <div class="confirmation-input" style="margin: 1.5rem 0;">
+                        <label for="confirm-delete-text" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            Для подтверждения введите: <span style="color: var(--error);">УДАЛИТЬ МОЙ АККАУНТ</span>
+                        </label>
+                        <input type="text" id="confirm-delete-text" placeholder="Введите текст для подтверждения" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--border-radius);">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-delete-account">Отмена</button>
+                        <button type="button" class="btn btn-danger" id="confirm-delete-account" disabled>
+                            <i class="fas fa-trash-alt icon"></i>
+                            Удалить аккаунт навсегда
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно добавления вакцинации -->
+        <div id="vaccination-modal" class="modal">
+            <div class="modal-overlay" onclick="closeVaccinationModal()"></div>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-syringe icon modal-icon"></i>
+                        <h3>Добавить вакцинацию</h3>
+                    </div>
+                    <button class="close-modal" onclick="closeVaccinationModal()">
+                        <i class="fas fa-times-circle icon"></i>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <form id="add-vaccination-form">
+                        <div class="input-group">
+                            <label for="vaccination-pet">
+                                <i class="fas fa-paw icon"></i>
+                                Питомец *
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="vaccination-pet" required>
+                                    <option value="" disabled selected>Выберите питомца</option>
+                                </select>
+                                <i class="fas fa-chevron-down icon arrow-down"></i>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="vaccination-type">
+                                <i class="fas fa-info-circle icon"></i>
+                                Тип вакцины *
+                            </label>
+                            <input type="text" id="vaccination-type" placeholder="Например: Комплексная" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="vaccination-date">
+                                    <i class="fas fa-calendar-alt icon"></i>
+                                    Дата вакцинации *
+                            </label>
+                            <input type="date" id="vaccination-date" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="next-vaccination">
+                                <i class="fas fa-calendar-alt icon"></i>
+                                Следующая вакцинация
+                            </label>
+                            <input type="date" id="next-vaccination">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="vaccination-notes">
+                            <i class="fas fa-edit icon"></i>
+                            Заметки
+                        </label>
+                        <textarea id="vaccination-notes" rows="3" placeholder="Дополнительная информация..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeVaccinationModal()">Отмена</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus icon"></i>
+                            Добавить вакцинацию
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления лекарства -->
+    <div id="medication-modal" class="modal">
+        <div class="modal-overlay" onclick="closeMedicationModal()"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-pills icon modal-icon"></i>
+                    <h3>Добавить лекарство</h3>
+                </div>
+                <button class="close-modal" onclick="closeMedicationModal()">
+                    <i class="fas fa-times-circle icon"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="add-medication-form">
+                    <div class="input-group">
+                        <label for="medication-pet">
+                            <i class="fas fa-paw icon"></i>
+                            Питомец *
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="medication-pet" required>
+                                <option value="" disabled selected>Выберите питомца</option>
+                            </select>
+                            <i class="fas fa-chevron-down icon arrow-down"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="medication-name">
+                            <i class="fas fa-pills icon"></i>
+                            Название лекарства *
+                        </label>
+                        <input type="text" id="medication-name" placeholder="Например: Антибиотик" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="medication-dosage">
+                                <i class="fas fa-weight-hanging icon"></i>
+                                Дозировка *
+                            </label>
+                            <input type="text" id="medication-dosage" placeholder="Например: 1 таблетка" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="medication-frequency">
+                                <i class="fas fa-redo icon"></i>
+                                Частота *
+                            </label>
+                            <input type="text" id="medication-frequency" placeholder="Например: 2 раза в день" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="medication-start">
+                                <i class="fas fa-calendar-alt icon"></i>
+                                Начало приема *
+                            </label>
+                            <input type="date" id="medication-start" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="medication-end">
+                                <i class="fas fa-calendar-alt icon"></i>
+                                Конец приема
+                            </label>
+                            <input type="date" id="medication-end">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="medication-notes">
+                            <i class="fas fa-edit icon"></i>
+                            Заметки
+                        </label>
+                        <textarea id="medication-notes" rows="3" placeholder="Дополнительная информация..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeMedicationModal()">Отмена</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus icon"></i>
+                            Добавить лекарство
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомления (toast) -->
+    <div id="notification-toast" class="notification-toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle icon toast-icon"></i>
+            <div class="toast-message">
+                <strong class="toast-title">Успешно!</strong>
+                <p class="toast-text">Действие выполнено</p>
+            </div>
+            <button class="toast-close">
+                <i class="fas fa-times icon"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="script.js"></script>
+    
+    <!-- Инициализация Telegram Web App -->
+    <script>
+        // Проверяем, загружены ли мы в Telegram
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.expand();
+            Telegram.WebApp.ready();
+            Telegram.WebApp.setHeaderColor('#7FB5B5');
+            Telegram.WebApp.setBackgroundColor('#7FB5B5');
+        }
+    </script>
+</body>
+</html>
