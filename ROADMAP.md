@@ -9,12 +9,14 @@
 - [x] SSL (Let's Encrypt) ← сейчас
 - [x] CORS заголовки для API
 
-## Phase 1: Бэкенд MVP
-- [ ] Python FastAPI + SQLite
-- [ ] Регистрация / логин (JWT токены)
-- [ ] Синхронизация данных (питомцы, события, настройки)
-- [ ] CRUD: питомцы, события календаря, уведомления
-- [ ] API документация (Swagger)
+## Phase 1: Бэкенд MVP (DONE)
+- [x] Python FastAPI + SQLite
+- [x] Регистрация / логин (JWT токены)
+- [x] CRUD: питомцы, события
+- [x] Endpoint синхронизации данных
+- [x] Nginx reverse proxy + SSL
+- [x] Systemd автозапуск
+- [ ] API документация (Swagger) — доступна по /docs
 
 ## Phase 2: Telegram Web App
 - [ ] Telegram Bot + WebApp initData
