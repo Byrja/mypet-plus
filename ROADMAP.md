@@ -6,8 +6,8 @@
 - [x] GitHub репозиторий: https://github.com/Byrja/mypet-plus
 - [x] Деплой фронта на nl-vmnano (/srv/mypet-plus)
 - [x] Nginx конфиг + домен mypet.byrja.duckdns.org
-- [ ] SSL (Let's Encrypt) ← сейчас
-- [ ] CORS заголовки для API
+- [x] SSL (Let's Encrypt) ← сейчас
+- [x] CORS заголовки для API
 
 ## Phase 1: Бэкенд MVP
 - [ ] Python FastAPI + SQLite
